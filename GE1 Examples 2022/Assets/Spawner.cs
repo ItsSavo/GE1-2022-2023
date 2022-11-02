@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -5,9 +6,12 @@ using UnityEngine;
 public class Spawner : MonoBehaviour
 {
 
+   
+
     System.Collections.IEnumerator Spawn()
     {
-        while(true)
+
+        while (true)
         {
             GameObject g = GameObject.CreatePrimitive(PrimitiveType.Cube);
             g.AddComponent<Rigidbody>();
@@ -26,4 +30,5 @@ public class Spawner : MonoBehaviour
     {
         
     }
+
 }
