@@ -2,85 +2,85 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+
 public class AITank : MonoBehaviour
 {
-    public List<Vector3> waypoints;
-    public int count = 5;
-    public float radius = 5;
-
-    public float speed;
-    public float fov;
-
+    public float radius = 10;
+    public int numWaypoints = 6;
+    public int current = 0;
+    List<Vector3> waypoints = new List<Vector3>();
+    public float speed = 10;
     public Transform player;
+    GameObject cube = null;
 
-    void SetUpWaypoints()
-    {
-        waypoints = new List<Vector3>();
-        waypoints.Clear();
-        float theta = (Mathf.PI * 2.0f) / (float) count;
-
-        for(int i = 0 ; i < count ; i ++)
-        {
-            float angle = i * theta;
-            Vector3 p = new Vector3
-                (
-                    Mathf.Sin(angle) * radius, 
-                    0,
-                    Mathf.Cos(angle) * radius
-                );
-            p = transform.TransformPoint(p);
-            waypoints.Add(p);
-
-        }
-    }
-
-    void OnDrawGizmos()
+    public void OnDrawGizmos()
     {
         if (!Application.isPlaying)
         {
-            SetUpWaypoints();
-            foreach (Vector3 v in waypoints)
+            float theta = Mathf.PI * 2.0f / (float)numWaypoints;
+
+            for (int i = 0; i < numWaypoints; i++)
             {
-                Gizmos.DrawWireSphere(v, 0.5f);
+                Vector3 pos = new Vector3(Mathf.Sin(theta * i) * radius, 0, Mathf.Cos(theta * i) * radius);
+                pos = transform.TransformPoint(pos);
+                Gizmos.color = Color.blue;
+                Gizmos.DrawWireSphere(pos, 1);
             }
         }
     }
 
-        // Start is called before the first frame update
-        void Start()
+    void Awake()
     {
-        SetUpWaypoints();
+        float theta = Mathf.PI * 2.0f / (float)numWaypoints;
 
+        for (int i = 0; i < numWaypoints; i++)
+        {
+            Vector3 pos = new Vector3(Mathf.Sin(theta * i) * radius, 0, Mathf.Cos(theta * i) * radius);
+            pos = transform.TransformPoint(pos);
+            waypoints.Add(pos);
+        }
     }
 
-    int current = 0;
-
-    // Update is called once per frame
     void Update()
     {
-        Vector3 totarget = waypoints[current] - transform.position;
-        float dist = totarget.magnitude;
-        if (dist < 1.0f)
+        Vector3 AItankPos = transform.position;
+        Vector3 AItankNew = waypoints[current] - AItankPos;
+
+        if (cube == null)
+        {
+            cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            cube.transform.position = AItankNew;
+        }
+        Debug.Log(AItankNew);
+        Destroy(cube);
+
+        float dist = AItankNew.magnitude;
+        if (dist < 1)
         {
             current = (current + 1) % waypoints.Count;
         }
-        Quaternion q = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(totarget), Time.deltaTime);
-        //transform.rotation = q;
-        //transform.Translate(0, 0, speed * Time.deltaTime);
 
-        Vector3 toPlayer = player.position - transform.position;
-        toPlayer.Normalize();
-        float dot = Vector3.Dot(toPlayer, transform.forward);
-       
-        GameManager.Log((dot > 0) ? "In front" : "behind");            
+        Vector3 direction = AItankNew / dist;
+        transform.position = Vector3.MoveTowards(transform.position, waypoints[current], Time.deltaTime);
+        transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(AItankNew, Vector3.up), 180 * Time.deltaTime);
+
+        Vector3 Player = player.position - transform.position;
+        float dot = Vector3.Dot(transform.forward, Player);
         float angle = Mathf.Acos(dot) * Mathf.Rad2Deg;
-        if (angle < 45)
+
+        if (dot > 0)
         {
-            GameManager.Log("I can see you");
+            Debug.Log("in front of tank");
         }
         else
         {
-            GameManager.Log("I can't see you");
+            Debug.Log("behind tank");
+        }
+
+        if (angle > 30 && 0 < dot && dot < 15)
+        {
+            Debug.Log("inside field of view");
+            Debug.Log("in range");
         }
     }
 }
