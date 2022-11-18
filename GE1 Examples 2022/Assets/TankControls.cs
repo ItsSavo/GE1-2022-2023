@@ -191,7 +191,7 @@ public partial class @TankControls : IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""1e8b8423-e12c-411d-8446-a5057cce48c6"",
-                    ""path"": ""<Gamepad>/leftTrigger"",
+                    ""path"": ""<Keyboard>/f"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
